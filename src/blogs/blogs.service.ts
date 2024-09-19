@@ -1,4 +1,9 @@
-import { BadRequestException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateBlogDto } from './dto/create-blog.dto';
 import { UpdateBlogCardDto, UpdateBlogDto } from './dto/update-blog.dto';
 import { PrismaService } from 'src/prisma.service';
@@ -63,40 +68,49 @@ export class BlogsService {
   }
 
   async findAll() {
-    return this.prisma.blog.findMany();
+    return await this.prisma.blog.findMany();
   }
 
   async findOne(id: number) {
     return await this.prisma.blog.findUnique({ where: { id } });
   }
 
-  // async updateCard(id: number, data: UpdateBlogCardDto) {
-  //   if (id == data.id) {
-  //     return await this.prisma.blog.update({
-  //       where: { id },
-  //       data,
-  //       // data: {
-  //       //   id: updateBlogCardDto.id,
-  //       //   is_pined: updateBlogCardDto.is_pined,
-  //       //   status: updateBlogCardDto.status,
-  //       //   // published:
-  //       //   //   updateBlogCardDto.status == blog_status.SHOW ? true : false,
-  //       // },
-  //     });
-  //   } else {
-  //     return 'id dont match';
-  //   }
-  // }
+  async updateCard(id: number, updateBlogCardDto: UpdateBlogCardDto) {
+    if (id == updateBlogCardDto.id) {
+      const findUser = await this.prisma.blog.findUnique({
+        where: {
+          id: id,
+        },
+      });
 
-  async updateCard(id: number, data: UpdateBlogCardDto) {
-    return this.prisma.blog.update({ where: { id }, data });
+      if (!findUser) {
+        throw new NotFoundException('User not found');
+      }
+
+      return await this.prisma.blog.update({
+        where: { id },
+        data: {
+          id: updateBlogCardDto.id,
+          is_pined: updateBlogCardDto.is_pined,
+          status: updateBlogCardDto.status,
+          published:
+            updateBlogCardDto.status == blog_status.SHOW ? true : false,
+        },
+      });
+    } else {
+      return 'id dont match';
+    }
   }
 
+  // async updateCard(id: number, data: UpdateBlogCardDto) {
+  //   return await this.prisma.blog.update({ where: { id }, data });
+  // }
+
   async update(id: number, data: UpdateBlogDto) {
-    return this.prisma.blog.update({ where: { id }, data });
+    return await this.prisma.blog.update({ where: { id }, data });
   }
 
   async remove(id: number) {
-    return this.prisma.blog.delete({ where: { id } });
+    return await this.prisma.blog.delete({ where: { id } });
   }
 }
