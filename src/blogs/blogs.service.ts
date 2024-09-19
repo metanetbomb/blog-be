@@ -1,0 +1,102 @@
+import { BadRequestException, HttpStatus, Injectable } from '@nestjs/common';
+import { CreateBlogDto } from './dto/create-blog.dto';
+import { UpdateBlogCardDto, UpdateBlogDto } from './dto/update-blog.dto';
+import { PrismaService } from 'src/prisma.service';
+import { blog_status, Prisma } from '@prisma/client';
+
+@Injectable()
+export class BlogsService {
+  constructor(private prisma: PrismaService) {}
+
+  async create(createBlogDto: CreateBlogDto) {
+    try {
+      const findEmail = await this.prisma.blog.findFirst({
+        where: { title: createBlogDto.title },
+      });
+      if (findEmail) throw new BadRequestException('Title already exist');
+
+      const findUrl = await this.prisma.blog.findFirst({
+        where: { url: createBlogDto.url },
+      });
+      if (findUrl) throw new BadRequestException('Url already exist');
+
+      const blog = await this.prisma.blog.create({
+        data: {
+          title: createBlogDto.title,
+          url: createBlogDto.url,
+          date: new Date(),
+          create_at: new Date(),
+          update_at: new Date(),
+          creator_id: 1,
+          last_edit_id: 1,
+          image: null,
+          content: null,
+          status: blog_status.CREATED,
+          published: false,
+          is_pined: false,
+          tags: {},
+          view: 0,
+        },
+      });
+      return blog;
+    } catch (error) {
+      return {
+        status: error.status || HttpStatus.INTERNAL_SERVER_ERROR,
+        message: error.message,
+      };
+    }
+  }
+
+  async findCardAll() {
+    const users = await this.prisma.blog.findMany({
+      select: {
+        id: true,
+        date: true,
+        create_at: true,
+        title: true,
+        url: true,
+        is_pined: true,
+        status: true,
+      },
+    });
+    return users;
+  }
+
+  async findAll() {
+    return this.prisma.blog.findMany();
+  }
+
+  async findOne(id: number) {
+    return await this.prisma.blog.findUnique({ where: { id } });
+  }
+
+  // async updateCard(id: number, data: UpdateBlogCardDto) {
+  //   if (id == data.id) {
+  //     return await this.prisma.blog.update({
+  //       where: { id },
+  //       data,
+  //       // data: {
+  //       //   id: updateBlogCardDto.id,
+  //       //   is_pined: updateBlogCardDto.is_pined,
+  //       //   status: updateBlogCardDto.status,
+  //       //   // published:
+  //       //   //   updateBlogCardDto.status == blog_status.SHOW ? true : false,
+  //       // },
+  //     });
+  //   } else {
+  //     return 'id dont match';
+  //   }
+  // }
+
+  async updateCard(id: number, data: UpdateBlogCardDto) {
+    return this.prisma.blog.update({ where: { id }, data });
+  }
+
+  async update(id: number, data: UpdateBlogDto) {
+    return this.prisma.blog.update({ where: { id }, data });
+  }
+
+  async remove(id: number) {
+    return this.prisma.blog.delete({ where: { id } });
+  }
+}
