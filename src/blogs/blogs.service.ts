@@ -72,12 +72,14 @@ export class BlogsService {
   }
 
   async findOne(id: number) {
-    return await this.prisma.blog.findUnique({ where: { id } });
+    const blog = await this.prisma.blog.findUnique({ where: { id } });
+    blog.view += 1;
+    return blog;
   }
 
   async updateCard(id: number, updateBlogCardDto: UpdateBlogCardDto) {
     try {
-      if (id == updateBlogCardDto.id) {
+      if (id != updateBlogCardDto.id) {
         throw new NotFoundException('id not match');
       }
       const findUser = await this.prisma.blog.findUnique({
@@ -88,8 +90,7 @@ export class BlogsService {
       if (!findUser) {
         throw new NotFoundException('User not found');
       }
-
-      return await this.prisma.blog.update({
+      await this.prisma.blog.update({
         where: { id },
         data: {
           id: updateBlogCardDto.id,
@@ -99,6 +100,12 @@ export class BlogsService {
             updateBlogCardDto.status == blog_status.SHOW ? true : false,
         },
       });
+
+      return {
+        // message: 'success',
+        // data: updateBlog,
+        status: HttpStatus.NO_CONTENT,
+      };
     } catch (error) {
       return {
         message: error.message,

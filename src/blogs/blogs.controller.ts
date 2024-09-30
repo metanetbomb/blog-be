@@ -22,7 +22,7 @@ export class BlogsController {
     return this.blogsService.create(createBlogDto);
   }
 
-  @Get('/card')
+  @Get('/cards')
   async findCardAll() {
     return this.blogsService.findCardAll();
   }
