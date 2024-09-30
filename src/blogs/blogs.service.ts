@@ -76,13 +76,15 @@ export class BlogsService {
   }
 
   async updateCard(id: number, updateBlogCardDto: UpdateBlogCardDto) {
-    if (id == updateBlogCardDto.id) {
+    try {
+      if (id == updateBlogCardDto.id) {
+        throw new NotFoundException('id not match');
+      }
       const findUser = await this.prisma.blog.findUnique({
         where: {
           id: id,
         },
       });
-
       if (!findUser) {
         throw new NotFoundException('User not found');
       }
@@ -97,14 +99,13 @@ export class BlogsService {
             updateBlogCardDto.status == blog_status.SHOW ? true : false,
         },
       });
-    } else {
-      return 'id dont match';
+    } catch (error) {
+      return {
+        message: error.message,
+        status: error.status || HttpStatus.INTERNAL_SERVER_ERROR,
+      };
     }
   }
-
-  // async updateCard(id: number, data: UpdateBlogCardDto) {
-  //   return await this.prisma.blog.update({ where: { id }, data });
-  // }
 
   async update(id: number, data: UpdateBlogDto) {
     return await this.prisma.blog.update({ where: { id }, data });
