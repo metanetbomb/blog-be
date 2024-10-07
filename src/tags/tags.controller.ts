@@ -19,8 +19,12 @@ export class TagsController {
   constructor(private readonly tagsService: TagsService) {}
 
   @Post()
-  async create(@Body() createTagDto: CreateTagDto): Promise<TagModel> {
-    // return this.tagsService.create(createTagDto);
+  async create(@Body() createTagDto: CreateTagDto) {
+    // return this.tagsService.create({
+    //   title: createTagDto.title,
+    //   meta: createTagDto.meta,
+    // });
+    console.log(createTagDto.meta);
     return this.tagsService.create({
       title: createTagDto.title,
       meta: createTagDto.meta,
@@ -38,12 +42,12 @@ export class TagsController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateTagDto: UpdateTagDto) {
-    return this.tagsService.update(+id, updateTagDto);
+  async update(@Param('id') id: string, @Body() updateTagDto: UpdateTagDto) {
+    return this.tagsService.update(Number(id), updateTagDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  async remove(@Param('id') id: string) {
     return this.tagsService.remove(+id);
   }
 }

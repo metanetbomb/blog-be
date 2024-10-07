@@ -1,5 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { $Enums, Prisma } from '@prisma/client';
 
 export class CreateBlogDto {
   @ApiProperty()

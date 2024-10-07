@@ -7,7 +7,7 @@ import {
 import { CreateBlogDto } from './dto/create-blog.dto';
 import { UpdateBlogCardDto, UpdateBlogDto } from './dto/update-blog.dto';
 import { PrismaService } from 'src/prisma.service';
-import { blog_status, Prisma } from '@prisma/client';
+import { blog_status } from '@prisma/client';
 
 @Injectable()
 export class BlogsService {
@@ -39,7 +39,6 @@ export class BlogsService {
           status: blog_status.CREATED,
           published: false,
           is_pined: false,
-          tags: {},
           view: 0,
         },
       });
@@ -114,8 +113,42 @@ export class BlogsService {
     }
   }
 
-  async update(id: number, data: UpdateBlogDto) {
-    return await this.prisma.blog.update({ where: { id }, data });
+  async update(id: number, updateBlogDto: UpdateBlogDto) {
+    try {
+      if (id != updateBlogDto.id) {
+        throw new NotFoundException('id not match');
+      }
+      const findBlog = await this.prisma.blog.findUnique({
+        where: {
+          id: id,
+        },
+      });
+      if (!findBlog) {
+        throw new NotFoundException('User not found');
+      }
+      await this.prisma.blog.update({
+        where: { id },
+        data: {
+          title: updateBlogDto.title,
+          url: updateBlogDto.url,
+          image: updateBlogDto.image,
+          content: updateBlogDto.content,
+          date: updateBlogDto.date,
+          last_edit_id: updateBlogDto.last_edit_id,
+        },
+      });
+
+      return {
+        // message: 'success',
+        // data: updateBlog,
+        status: HttpStatus.NO_CONTENT,
+      };
+    } catch (error) {
+      return {
+        message: error.message,
+        status: error.status || HttpStatus.INTERNAL_SERVER_ERROR,
+      };
+    }
   }
 
   async remove(id: number) {

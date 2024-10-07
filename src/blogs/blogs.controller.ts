@@ -6,11 +6,15 @@ import {
   Patch,
   Param,
   Delete,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { BlogsService } from './blogs.service';
 import { CreateBlogDto } from './dto/create-blog.dto';
 import { UpdateBlogCardDto, UpdateBlogDto } from './dto/update-blog.dto';
 import { ApiTags } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
 
 @ApiTags('blogs')
 @Controller('blogs')
@@ -50,5 +54,17 @@ export class BlogsController {
   @Delete(':id')
   async remove(@Param('id') id: string) {
     return this.blogsService.remove(+id);
+  }
+
+  @Post('upload')
+  @UseInterceptors(FileInterceptor('file'))
+  uploadFile(@UploadedFile() file: Express.Multer.File) {
+    console.log(file);
+  }
+
+  @Post('upload/image')
+  @UseInterceptors(FileInterceptor('image', { dest: './images' }))
+  uploadImage(@UploadedFile() file: Express.Multer.File) {
+    console.log(file);
   }
 }

@@ -28,24 +28,23 @@ model Blog {
   view         Int         @default(0)
   is_pined     Boolean     @default(false)
   status       blog_status @default(CREATED)
-  tags         Tag[]
 
-  creator    User @relation(fields: [creator_id], references: [id])
+  creator    User       @relation(fields: [creator_id], references: [id])
   creator_id Int
+  Blog_Tag   Blog_Tag[]
 }
 
 model Tag {
-  id    Int    @id @default(autoincrement())
-  title String
-  meta  String
-  Blog  Blog[]
+  id       Int        @id @default(autoincrement())
+  title    String
+  meta     String
+  Blog_Tag Blog_Tag[]
 }
 
 model User {
   id    Int     @id @default(autoincrement())
   email String  @unique
   name  String?
-  // Blog  Blog[]
   Blog  Blog[]
 }
 
@@ -53,4 +52,13 @@ enum blog_status {
   CREATED
   SHOW
   HIDE
+}
+
+model Blog_Tag {
+  id      Int @id @default(autoincrement())
+  blog_id Int
+  tag_id  Int
+
+  blog Blog @relation(fields: [blog_id], references: [id])
+  tag  Tag  @relation(fields: [tag_id], references: [id])
 }
